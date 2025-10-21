@@ -1,0 +1,7 @@
+/home/luis-pablo-garcia/Escritorio/PROYECTO-SISTEMAS-OPERATIVOS/202200129_LAB_SO1_2S2025_PROYECTO3_ULTIMO/proyecto3/rust-api/target/release/deps/tracing_attributes-092c6673f708c0b7.d: /home/luis-pablo-garcia/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tracing-attributes-0.1.30/src/lib.rs /home/luis-pablo-garcia/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tracing-attributes-0.1.30/src/attr.rs /home/luis-pablo-garcia/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tracing-attributes-0.1.30/src/expand.rs
+
+/home/luis-pablo-garcia/Escritorio/PROYECTO-SISTEMAS-OPERATIVOS/202200129_LAB_SO1_2S2025_PROYECTO3_ULTIMO/proyecto3/rust-api/target/release/deps/libtracing_attributes-092c6673f708c0b7.so: /home/luis-pablo-garcia/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tracing-attributes-0.1.30/src/lib.rs /home/luis-pablo-garcia/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tracing-attributes-0.1.30/src/attr.rs /home/luis-pablo-garcia/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tracing-attributes-0.1.30/src/expand.rs
+
+/home/luis-pablo-garcia/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tracing-attributes-0.1.30/src/lib.rs:
+/home/luis-pablo-garcia/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tracing-attributes-0.1.30/src/attr.rs:
+/home/luis-pablo-garcia/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tracing-attributes-0.1.30/src/expand.rs:

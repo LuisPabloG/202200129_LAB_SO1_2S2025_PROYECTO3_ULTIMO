@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: go-client
-        image: localhost:5000/weather-go-client:latest
+        image: gcr.io/proyecto-3-475405/weather-go-client:latest
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8081

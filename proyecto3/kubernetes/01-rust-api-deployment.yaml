@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: rust-api
-        image: localhost:5000/weather-api:latest
+        image: gcr.io/proyecto-3-475405/weather-api:latest
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8080
@@ -29,11 +29,11 @@ spec:
           value: "info"
         resources:
           requests:
-            cpu: 100m
-            memory: 128Mi
+            cpu: 50m
+            memory: 64Mi
           limits:
-            cpu: 500m
-            memory: 512Mi
+            cpu: 200m
+            memory: 256Mi
         livenessProbe:
           httpGet:
             path: /health

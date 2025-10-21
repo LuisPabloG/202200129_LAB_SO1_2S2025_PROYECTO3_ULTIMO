@@ -1,0 +1,9 @@
+/home/luis-pablo-garcia/Escritorio/PROYECTO-SISTEMAS-OPERATIVOS/202200129_LAB_SO1_2S2025_PROYECTO3_ULTIMO/proyecto3/rust-api/target/release/deps/potential_utf-0eb5dd4b64ca6e65.d: /home/luis-pablo-garcia/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/potential_utf-0.1.3/src/lib.rs /home/luis-pablo-garcia/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/potential_utf-0.1.3/src/uchar.rs /home/luis-pablo-garcia/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/potential_utf-0.1.3/src/ustr.rs
+
+/home/luis-pablo-garcia/Escritorio/PROYECTO-SISTEMAS-OPERATIVOS/202200129_LAB_SO1_2S2025_PROYECTO3_ULTIMO/proyecto3/rust-api/target/release/deps/libpotential_utf-0eb5dd4b64ca6e65.rlib: /home/luis-pablo-garcia/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/potential_utf-0.1.3/src/lib.rs /home/luis-pablo-garcia/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/potential_utf-0.1.3/src/uchar.rs /home/luis-pablo-garcia/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/potential_utf-0.1.3/src/ustr.rs
+
+/home/luis-pablo-garcia/Escritorio/PROYECTO-SISTEMAS-OPERATIVOS/202200129_LAB_SO1_2S2025_PROYECTO3_ULTIMO/proyecto3/rust-api/target/release/deps/libpotential_utf-0eb5dd4b64ca6e65.rmeta: /home/luis-pablo-garcia/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/potential_utf-0.1.3/src/lib.rs /home/luis-pablo-garcia/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/potential_utf-0.1.3/src/uchar.rs /home/luis-pablo-garcia/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/potential_utf-0.1.3/src/ustr.rs
+
+/home/luis-pablo-garcia/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/potential_utf-0.1.3/src/lib.rs:
+/home/luis-pablo-garcia/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/potential_utf-0.1.3/src/uchar.rs:
+/home/luis-pablo-garcia/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/potential_utf-0.1.3/src/ustr.rs:

@@ -1,0 +1,9 @@
+/home/luis-pablo-garcia/Escritorio/PROYECTO-SISTEMAS-OPERATIVOS/202200129_LAB_SO1_2S2025_PROYECTO3_ULTIMO/proyecto3/rust-api/target/release/deps/alloc_stdlib-397b67de860f1947.d: /home/luis-pablo-garcia/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/alloc-stdlib-0.2.2/src/lib.rs /home/luis-pablo-garcia/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/alloc-stdlib-0.2.2/src/heap_alloc.rs /home/luis-pablo-garcia/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/alloc-stdlib-0.2.2/src/std_alloc.rs
+
+/home/luis-pablo-garcia/Escritorio/PROYECTO-SISTEMAS-OPERATIVOS/202200129_LAB_SO1_2S2025_PROYECTO3_ULTIMO/proyecto3/rust-api/target/release/deps/liballoc_stdlib-397b67de860f1947.rlib: /home/luis-pablo-garcia/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/alloc-stdlib-0.2.2/src/lib.rs /home/luis-pablo-garcia/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/alloc-stdlib-0.2.2/src/heap_alloc.rs /home/luis-pablo-garcia/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/alloc-stdlib-0.2.2/src/std_alloc.rs
+
+/home/luis-pablo-garcia/Escritorio/PROYECTO-SISTEMAS-OPERATIVOS/202200129_LAB_SO1_2S2025_PROYECTO3_ULTIMO/proyecto3/rust-api/target/release/deps/liballoc_stdlib-397b67de860f1947.rmeta: /home/luis-pablo-garcia/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/alloc-stdlib-0.2.2/src/lib.rs /home/luis-pablo-garcia/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/alloc-stdlib-0.2.2/src/heap_alloc.rs /home/luis-pablo-garcia/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/alloc-stdlib-0.2.2/src/std_alloc.rs
+
+/home/luis-pablo-garcia/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/alloc-stdlib-0.2.2/src/lib.rs:
+/home/luis-pablo-garcia/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/alloc-stdlib-0.2.2/src/heap_alloc.rs:
+/home/luis-pablo-garcia/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/alloc-stdlib-0.2.2/src/std_alloc.rs:
