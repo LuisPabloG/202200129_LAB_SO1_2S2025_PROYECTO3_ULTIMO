@@ -17,8 +17,8 @@ spec:
     spec:
       containers:
       - name: go-client
-        image: gcr.io/proyecto-3-475405/weather-go-client:latest
-        imagePullPolicy: IfNotPresent
+        image: gcr.io/proyecto-3-475405/weather-go-client:v2
+        imagePullPolicy: Always
         ports:
         - containerPort: 8081
           name: http

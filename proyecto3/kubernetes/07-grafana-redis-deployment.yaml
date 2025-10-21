@@ -1,0 +1,119 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana-with-redis
+  namespace: weather-system
+  labels:
+    app: grafana-redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana-redis
+  template:
+    metadata:
+      labels:
+        app: grafana-redis
+    spec:
+      initContainers:
+      # Init container para instalar plugin
+      - name: init-plugins
+        image: grafana/grafana:latest
+        command:
+        - /bin/bash
+        - -c
+        - |
+          grafana-cli plugins install redis-datasource || true
+          echo "✅ Plugin de Redis instalado"
+        volumeMounts:
+        - name: grafana-plugins
+          mountPath: /var/lib/grafana/plugins
+        - name: grafana-data
+          mountPath: /var/lib/grafana
+      
+      containers:
+      - name: grafana
+        image: grafana/grafana:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 3000
+          name: http
+        env:
+        - name: GF_SECURITY_ADMIN_USER
+          value: admin
+        - name: GF_SECURITY_ADMIN_PASSWORD
+          value: admin
+        - name: GF_INSTALL_PLUGINS
+          value: redis-datasource
+        - name: GF_USERS_ALLOW_SIGN_UP
+          value: "false"
+        - name: GF_SERVER_ROOT_URL
+          value: http://localhost:3000
+        volumeMounts:
+        - name: grafana-plugins
+          mountPath: /var/lib/grafana/plugins
+        - name: grafana-data
+          mountPath: /var/lib/grafana
+        - name: provisioning-datasources
+          mountPath: /etc/grafana/provisioning/datasources
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 300m
+            memory: 512Mi
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      
+      volumes:
+      - name: grafana-plugins
+        emptyDir: {}
+      - name: grafana-data
+        emptyDir: {}
+      - name: provisioning-datasources
+        configMap:
+          name: grafana-datasources
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-datasources
+  namespace: weather-system
+data:
+  valkey.yaml: |
+    apiVersion: 1
+    datasources:
+    - name: Valkey
+      type: redis-datasource
+      access: proxy
+      isDefault: true
+      jsonData:
+        client: standalone
+        tlsAuth: false
+        tlsSkipVerify: true
+      url: http://valkey.weather-system:6379
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana-redis-service
+  namespace: weather-system
+spec:
+  selector:
+    app: grafana-redis
+  ports:
+  - port: 3000
+    targetPort: 3000
+    protocol: TCP
+  type: ClusterIP

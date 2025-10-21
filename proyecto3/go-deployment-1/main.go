@@ -1,16 +1,18 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
-	"sync"
 	"sync/atomic"
 	"syscall"
 	"time"
+
+	"github.com/redis/go-redis/v9"
 )
 
 type WeatherTweet struct {
@@ -28,11 +30,37 @@ type ApiResponse struct {
 
 var (
 	processed int64
-	mu        sync.Mutex
-	tweets    []WeatherTweet
+	rdb       *redis.Client
 )
 
-// Handler para recibir tweets de la API Rust
+// Inicializar conexión a Valkey/Redis
+func initRedis() error {
+	redisHost := os.Getenv("REDIS_HOST")
+	if redisHost == "" {
+		redisHost = "valkey"
+	}
+	redisPort := os.Getenv("REDIS_PORT")
+	if redisPort == "" {
+		redisPort = "6379"
+	}
+
+	rdb = redis.NewClient(&redis.Options{
+		Addr: fmt.Sprintf("%s:%s", redisHost, redisPort),
+	})
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err := rdb.Ping(ctx).Err()
+	if err != nil {
+		return fmt.Errorf("no se puede conectar a Redis: %w", err)
+	}
+
+	log.Printf("✓ Conectado a Valkey en %s:%s", redisHost, redisPort)
+	return nil
+}
+
+// Handler para recibir tweets
 func handleWeatherPost(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
@@ -41,28 +69,38 @@ func handleWeatherPost(w http.ResponseWriter, r *http.Request) {
 
 	var tweet WeatherTweet
 	if err := json.NewDecoder(r.Body).Decode(&tweet); err != nil {
-		http.Error(w, fmt.Sprintf("Error al decodificar JSON: %v", err), http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf("Error al decodificar: %v", err), http.StatusBadRequest)
 		return
 	}
 
-	// Incrementar contador
 	count := atomic.AddInt64(&processed, 1)
+	id := fmt.Sprintf("tweet-%d", count)
 
-	// Almacenar localmente
-	mu.Lock()
-	tweets = append(tweets, tweet)
-	mu.Unlock()
+	// Guardar en Valkey con estructura weather:{municipality}:{id} = JSON
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
-	log.Printf("✓ Tweet #%d recibido: municipality=%s, temp=%d, humidity=%d, weather=%s",
-		count, tweet.Municipality, tweet.Temperature, tweet.Humidity, tweet.Weather)
+	key := fmt.Sprintf("weather:%s:%d", tweet.Municipality, count)
+	tweetJSON, _ := json.Marshal(tweet)
 
-	// Simular envío a gRPC servers (Writers)
-	go forwardToWriters(tweet)
+	err := rdb.Set(ctx, key, string(tweetJSON), 24*time.Hour).Err()
+	if err != nil {
+		log.Printf("❌ Error guardando en Valkey: %v", err)
+	}
+
+	// También guardar en lista por municipio
+	rdb.LPush(ctx, fmt.Sprintf("tweets:%s", tweet.Municipality), id)
+
+	// Incrementar contador
+	rdb.Incr(ctx, fmt.Sprintf("count:%s", tweet.Municipality))
+
+	log.Printf("✓ Tweet #%d: %s (T:%d°C, H:%d%%) → Valkey",
+		count, tweet.Municipality, tweet.Temperature, tweet.Humidity)
 
 	response := ApiResponse{
 		Status:  "success",
-		Message: "Tweet procesado por Go Client",
-		ID:      fmt.Sprintf("go-tweet-%d", count),
+		Message: "Guardado en Valkey",
+		ID:      id,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -70,36 +108,38 @@ func handleWeatherPost(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-// Simular envío a Writers (en fase 2 serán reales gRPC servers)
-func forwardToWriters(tweet WeatherTweet) {
-	// Aquí irían las llamadas a gRPC servers en fase 2
-	// Por ahora solo logs
-	log.Printf("📤 Reenviando tweet a Writers: %s", tweet.Municipality)
-}
-
-// Handler para obtener stats
+// Handler para obtener estadísticas
 func handleStats(w http.ResponseWriter, r *http.Request) {
-	mu.Lock()
-	defer mu.Unlock()
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	// Obtener contadores por municipio
+	chinautlaCmd := rdb.Get(ctx, "count:chinautla")
+	mixcoCmd := rdb.Get(ctx, "count:mixco")
+	guatemalaCmd := rdb.Get(ctx, "count:guatemala")
+	amatitlanCmd := rdb.Get(ctx, "count:amatitlan")
 
 	response := map[string]interface{}{
-		"total_processed":  atomic.LoadInt64(&processed),
-		"tweets_in_memory": len(tweets),
-		"service":          "Go Deployment 1 (gRPC Client)",
-		"timestamp":        time.Now().Unix(),
+		"total_processed": atomic.LoadInt64(&processed),
+		"counts_by_municipality": map[string]string{
+			"chinautla": chinautlaCmd.Val(),
+			"mixco":     mixcoCmd.Val(),
+			"guatemala": guatemalaCmd.Val(),
+			"amatitlan": amatitlanCmd.Val(),
+		},
+		"service":   "Go Deployment 1 (Valkey Writer)",
+		"timestamp": time.Now().Unix(),
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
 
-// Health check
 func handleHealth(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"status": "healthy"})
 }
 
-// Readiness check
 func handleReady(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
@@ -108,39 +148,41 @@ func handleReady(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// Root endpoint
 func handleRoot(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"service":      "Go Deployment 1 - gRPC Client",
-		"version":      "1.0.0",
+		"service":      "Go Deployment 1 - Valkey Writer",
+		"version":      "2.0.0",
 		"municipality": "chinautla",
 		"endpoints": map[string]string{
-			"POST /api/weather": "Recibir tweets de Rust API",
+			"POST /api/weather": "Recibir y almacenar tweets",
 			"GET /stats":        "Obtener estadísticas",
 			"GET /health":       "Health check",
-			"GET /ready":        "Readiness check",
 		},
 	})
 }
 
 func main() {
+	// Inicializar Valkey
+	if err := initRedis(); err != nil {
+		log.Fatalf("❌ Error inicializando Redis: %v", err)
+	}
+	defer rdb.Close()
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8081"
 	}
 
-	log.Printf("🚀 Go Deployment 1 (gRPC Client) iniciando en puerto %s", port)
+	log.Printf("🚀 Go Deployment 1 (Valkey Writer) iniciando en puerto %s", port)
 	log.Printf("📍 Municipio: Chinautla")
 
-	// Rutas
 	http.HandleFunc("/", handleRoot)
 	http.HandleFunc("/api/weather", handleWeatherPost)
 	http.HandleFunc("/stats", handleStats)
 	http.HandleFunc("/health", handleHealth)
 	http.HandleFunc("/ready", handleReady)
 
-	// Server HTTP
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%s", port),
 		Handler:      http.DefaultServeMux,
@@ -158,9 +200,8 @@ func main() {
 		srv.Close()
 	}()
 
-	// Iniciar servidor
 	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		log.Fatalf("❌ Error al iniciar servidor: %v", err)
+		log.Fatalf("❌ Error: %v", err)
 	}
 
 	log.Println("✓ Servidor detenido")
