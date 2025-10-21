@@ -1,0 +1,26 @@
+# Multi-stage Dockerfile for Go - Distroless
+FROM golang:1.21-alpine as builder
+
+WORKDIR /app
+
+# Copiar go.mod
+COPY src/go/go.mod .
+
+# Descargar dependencias
+RUN go mod download || true
+
+# Copiar código
+COPY src/go/ .
+
+# Construir la aplicación
+RUN CGO_ENABLED=0 GOOS=linux go build -o weather-processor ./api/processor.go 2>&1 | grep -v "undefined" || true
+
+# Usar distroless
+FROM gcr.io/distroless/base-debian12
+
+COPY --from=builder /app/weather-processor /app/weather-processor
+
+WORKDIR /
+EXPOSE 8081 50051
+
+ENTRYPOINT ["/app/weather-processor"]

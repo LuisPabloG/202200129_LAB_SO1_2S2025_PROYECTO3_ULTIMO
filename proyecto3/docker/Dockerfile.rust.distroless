@@ -1,0 +1,30 @@
+# Multi-stage Dockerfile for Rust - Distroless
+FROM rust:1.73 as builder
+
+WORKDIR /app
+
+# Copiar archivos de configuración
+COPY src/rust/Cargo.toml .
+COPY src/rust/Cargo.lock* .
+
+# Crear estructura del proyecto
+RUN mkdir src && echo "fn main() {}" > src/main.rs
+
+# Pre-descargar dependencias
+RUN cargo build --release 2>&1 | grep -v "warning" || true
+
+# Copiar código fuente real
+COPY src/rust/src ./src
+
+# Construir la aplicación
+RUN touch src/main.rs && cargo build --release
+
+# Usar base distroless
+FROM gcr.io/distroless/cc-debian12
+
+COPY --from=builder /app/target/release/weather-api /app/weather-api
+
+WORKDIR /
+EXPOSE 8080
+
+ENTRYPOINT ["/app/weather-api"]
