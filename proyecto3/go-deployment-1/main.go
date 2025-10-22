@@ -101,17 +101,23 @@ func handleWeatherPost(w http.ResponseWriter, r *http.Request) {
 		log.Printf("❌ Error incrementando contador: %v", err)
 	}
 
-	// 4. Guardar temperatura en lista (para análisis)
+	// 4. Guardar temperatura en lista Y calcular promedio
 	err = rdb.LPush(ctx, fmt.Sprintf("temperatures:%s", tweet.Municipality), int64(tweet.Temperature)).Err()
 	if err != nil {
 		log.Printf("❌ Error guardando temperatura: %v", err)
 	}
+	// Guardar suma y conteo para calcular promedio
+	rdb.IncrByFloat(ctx, fmt.Sprintf("temp_sum:%s", tweet.Municipality), float64(tweet.Temperature))
+	rdb.Incr(ctx, fmt.Sprintf("temp_count:%s", tweet.Municipality))
 
-	// 5. Guardar humedad en lista (para análisis)
+	// 5. Guardar humedad en lista Y calcular promedio
 	err = rdb.LPush(ctx, fmt.Sprintf("humidity:%s", tweet.Municipality), int64(tweet.Humidity)).Err()
 	if err != nil {
 		log.Printf("❌ Error guardando humedad: %v", err)
 	}
+	// Guardar suma y conteo para calcular promedio
+	rdb.IncrByFloat(ctx, fmt.Sprintf("humidity_sum:%s", tweet.Municipality), float64(tweet.Humidity))
+	rdb.Incr(ctx, fmt.Sprintf("humidity_count:%s", tweet.Municipality))
 
 	// 6. Guardar clima en contador (para distribución)
 	err = rdb.Incr(ctx, fmt.Sprintf("weather:%s:%s", tweet.Municipality, tweet.Weather)).Err()
@@ -187,6 +193,48 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// Nuevo handler para obtener promedios
+func handleAverages(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	municipalities := []string{"chinautla", "mixco", "guatemala", "amatitlan"}
+	averages := make(map[string]interface{})
+
+	for _, mun := range municipalities {
+		tempSumCmd := rdb.Get(ctx, fmt.Sprintf("temp_sum:%s", mun))
+		tempCountCmd := rdb.Get(ctx, fmt.Sprintf("temp_count:%s", mun))
+		humidSumCmd := rdb.Get(ctx, fmt.Sprintf("humidity_sum:%s", mun))
+		humidCountCmd := rdb.Get(ctx, fmt.Sprintf("humidity_count:%s", mun))
+
+		tempSum, _ := tempSumCmd.Float64()
+		tempCount, _ := tempCountCmd.Int64()
+		humidSum, _ := humidSumCmd.Float64()
+		humidCount, _ := humidCountCmd.Int64()
+
+		var tempAvg, humidAvg float64
+		if tempCount > 0 {
+			tempAvg = tempSum / float64(tempCount)
+		}
+		if humidCount > 0 {
+			humidAvg = humidSum / float64(humidCount)
+		}
+
+		averages[mun] = map[string]interface{}{
+			"avg_temperature":  fmt.Sprintf("%.2f", tempAvg),
+			"avg_humidity":     fmt.Sprintf("%.2f", humidAvg),
+			"temp_samples":     tempCount,
+			"humidity_samples": humidCount,
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"timestamp": time.Now().Unix(),
+		"averages":  averages,
+	})
+}
+
 func main() {
 	// Inicializar Valkey
 	if err := initRedis(); err != nil {
@@ -205,6 +253,7 @@ func main() {
 	http.HandleFunc("/", handleRoot)
 	http.HandleFunc("/api/weather", handleWeatherPost)
 	http.HandleFunc("/stats", handleStats)
+	http.HandleFunc("/averages", handleAverages)
 	http.HandleFunc("/health", handleHealth)
 	http.HandleFunc("/ready", handleReady)
 
