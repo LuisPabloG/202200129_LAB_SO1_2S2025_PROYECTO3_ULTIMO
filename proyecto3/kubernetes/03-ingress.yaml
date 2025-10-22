@@ -9,24 +9,23 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: localhost
-    http:
+  - http:
       paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: rust-api-service
-            port:
-              number: 8080
       - path: /api/weather
         pathType: Prefix
         backend:
           service:
-            name: rust-api-service
+            name: go-deployment-1-service
             port:
-              number: 8080
+              number: 8081
       - path: /stats
+        pathType: Prefix
+        backend:
+          service:
+            name: go-deployment-1-service
+            port:
+              number: 8081
+      - path: /
         pathType: Prefix
         backend:
           service:
