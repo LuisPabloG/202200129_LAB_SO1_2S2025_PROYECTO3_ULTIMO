@@ -83,16 +83,41 @@ func handleWeatherPost(w http.ResponseWriter, r *http.Request) {
 	key := fmt.Sprintf("weather:%s:%d", tweet.Municipality, count)
 	tweetJSON, _ := json.Marshal(tweet)
 
+	// 1. Guardar tweet JSON completo
 	err := rdb.Set(ctx, key, string(tweetJSON), 24*time.Hour).Err()
 	if err != nil {
-		log.Printf("❌ Error guardando en Valkey: %v", err)
+		log.Printf("❌ Error guardando tweet JSON: %v", err)
 	}
 
-	// También guardar en lista por municipio
-	rdb.LPush(ctx, fmt.Sprintf("tweets:%s", tweet.Municipality), id)
+	// 2. Guardar en lista de IDs por municipio
+	err = rdb.LPush(ctx, fmt.Sprintf("tweets:%s", tweet.Municipality), id).Err()
+	if err != nil {
+		log.Printf("❌ Error guardando en lista tweets:%s: %v", tweet.Municipality, err)
+	}
 
-	// Incrementar contador
-	rdb.Incr(ctx, fmt.Sprintf("count:%s", tweet.Municipality))
+	// 3. Incrementar contador
+	err = rdb.Incr(ctx, fmt.Sprintf("count:%s", tweet.Municipality)).Err()
+	if err != nil {
+		log.Printf("❌ Error incrementando contador: %v", err)
+	}
+
+	// 4. Guardar temperatura en lista (para análisis)
+	err = rdb.LPush(ctx, fmt.Sprintf("temperatures:%s", tweet.Municipality), int64(tweet.Temperature)).Err()
+	if err != nil {
+		log.Printf("❌ Error guardando temperatura: %v", err)
+	}
+
+	// 5. Guardar humedad en lista (para análisis)
+	err = rdb.LPush(ctx, fmt.Sprintf("humidity:%s", tweet.Municipality), int64(tweet.Humidity)).Err()
+	if err != nil {
+		log.Printf("❌ Error guardando humedad: %v", err)
+	}
+
+	// 6. Guardar clima en contador (para distribución)
+	err = rdb.Incr(ctx, fmt.Sprintf("weather:%s:%s", tweet.Municipality, tweet.Weather)).Err()
+	if err != nil {
+		log.Printf("❌ Error guardando clima: %v", err)
+	}
 
 	log.Printf("✓ Tweet #%d: %s (T:%d°C, H:%d%%) → Valkey",
 		count, tweet.Municipality, tweet.Temperature, tweet.Humidity)

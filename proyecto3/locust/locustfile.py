@@ -2,10 +2,20 @@ import random
 from locust import HttpUser, task, between, events
 import json
 import logging
+import redis
 
 # Configurar logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Conectar a Valkey
+try:
+    redis_client = redis.Redis(host='valkey.weather-system', port=6379, decode_responses=True, socket_connect_timeout=5)
+    redis_client.ping()
+    logger.info("✓ Conectado a Valkey")
+except Exception as e:
+    logger.warning(f"⚠ No se pudo conectar a Valkey: {e}")
+    redis_client = None
 
 # Municipios y climas disponibles
 MUNICIPALITIES = ["mixco", "guatemala", "amatitlan", "chinautla"]
@@ -24,22 +34,40 @@ class WeatherLoadTest(HttpUser):
     
     def on_start(self):
         """Ejecutado al iniciar cada usuario simulado"""
-        logger.info(f"👤 Usuario {self.client_id} iniciado - Municipio asignado: {ASSIGNED_MUNICIPALITY}")
+        logger.info(f"👤 Usuario iniciado - Municipio asignado: {ASSIGNED_MUNICIPALITY}")
+    
+    def get_municipality(self):
+        """
+        Retorna un municipio respetando tu carnet pero generando para todos
+        70% de probabilidad para Chinautla (municipio asignado)
+        10% cada uno para los otros municipios
+        """
+        if random.random() < 0.7:
+            return "chinautla"
+        return random.choice(["mixco", "guatemala", "amatitlan"])
     
     @task(1)
     def send_weather_tweet(self):
         """
         Envía un tweet del clima con estructura JSON
         Estructura según el proyecto: municipality, temperature, humidity, weather
+        Prioriza Chinautla pero genera para TODOS los municipios
+        También guarda datos en Valkey para Grafana
         """
+        municipality = self.get_municipality()
+        temperature = random.randint(15, 35)
+        humidity = random.randint(30, 90)
+        weather = random.choice(WEATHERS)
+        
         tweet_data = {
-            "municipality": ASSIGNED_MUNICIPALITY,
-            "temperature": random.randint(15, 35),  # 15°C a 35°C
-            "humidity": random.randint(30, 90),      # 30% a 90%
-            "weather": random.choice(WEATHERS)
+            "municipality": municipality,
+            "temperature": temperature,
+            "humidity": humidity,
+            "weather": weather
         }
         
         try:
+            # 1. Enviar al Go API
             response = self.client.post(
                 "/api/weather",
                 json=tweet_data,
@@ -48,6 +76,25 @@ class WeatherLoadTest(HttpUser):
             
             if response.status_code == 200:
                 logger.debug(f"✓ Tweet enviado: {tweet_data}")
+                
+                # 2. Guardar datos adicionales en Valkey para Grafana
+                if redis_client:
+                    try:
+                        # Guardar temperatura en lista
+                        redis_client.lpush(f"temperatures:{municipality}", temperature)
+                        
+                        # Guardar humedad en lista
+                        redis_client.lpush(f"humidity:{municipality}", humidity)
+                        
+                        # Contar por tipo de clima
+                        redis_client.incr(f"weather:{municipality}:{weather}")
+                        
+                        # Guardar tweet ID en lista adicional
+                        tweet_id = f"tweet-{random.randint(100000, 999999)}"
+                        redis_client.lpush(f"tweets:{municipality}", tweet_id)
+                        
+                    except Exception as e:
+                        logger.debug(f"Error guardando en Valkey: {e}")
             else:
                 logger.warning(f"⚠ Respuesta no esperada: {response.status_code}")
                 
