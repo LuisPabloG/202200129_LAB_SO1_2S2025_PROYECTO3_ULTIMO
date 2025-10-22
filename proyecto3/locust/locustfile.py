@@ -8,14 +8,27 @@ import redis
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Conectar a Valkey
+# Conectar a Valkey - Usar IP del LoadBalancer
+# Si tienes LoadBalancer, usa: redis.Redis(host='EXTERNAL_IP', port=6379)
+# Si no, usa: redis.Redis(host='localhost', port=6379) y haz port-forward
+
+# Opciones de conexión (descomentar la que funcione):
+redis_client = None
+
+# Opción 1: Conectar via puerto local (si haces port-forward)
 try:
-    redis_client = redis.Redis(host='valkey.weather-system', port=6379, decode_responses=True, socket_connect_timeout=5)
+    redis_client = redis.Redis(host='localhost', port=6379, decode_responses=True, socket_connect_timeout=5)
     redis_client.ping()
-    logger.info("✓ Conectado a Valkey")
+    logger.info("✓ Conectado a Valkey (localhost:6379)")
 except Exception as e:
-    logger.warning(f"⚠ No se pudo conectar a Valkey: {e}")
-    redis_client = None
+    logger.debug(f"⚠ No se pudo conectar a localhost:6379 - {e}")
+    
+# Opción 2: Si tienes IP externa de LoadBalancer, reemplaza aquí
+# Descomentar y usar IP real de LoadBalancer:
+# redis_client = redis.Redis(host='EXTERNAL_IP_AQUI', port=6379, decode_responses=True, socket_connect_timeout=5)
+
+if redis_client is None:
+    logger.warning("⚠ Valkey no disponible - solo funcionarán queries de Go API")
 
 # Municipios y climas disponibles
 MUNICIPALITIES = ["mixco", "guatemala", "amatitlan", "chinautla"]

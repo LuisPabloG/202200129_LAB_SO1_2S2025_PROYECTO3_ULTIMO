@@ -1,0 +1,412 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": "Valkey",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "pieType": "donut",
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "command": "get",
+          "datasource": "Valkey",
+          "key": "count:chinautla",
+          "queryType": "get",
+          "refId": "Chinautla"
+        },
+        {
+          "command": "get",
+          "datasource": "Valkey",
+          "key": "count:mixco",
+          "queryType": "get",
+          "refId": "Mixco"
+        },
+        {
+          "command": "get",
+          "datasource": "Valkey",
+          "key": "count:guatemala",
+          "queryType": "get",
+          "refId": "Guatemala"
+        },
+        {
+          "command": "get",
+          "datasource": "Valkey",
+          "key": "count:amatitlan",
+          "queryType": "get",
+          "refId": "Amatitlan"
+        }
+      ],
+      "title": "📊 Distribución de Tweets por Municipio",
+      "type": "piechart"
+    },
+    {
+      "datasource": "Valkey",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "command": "get",
+          "datasource": "Valkey",
+          "key": "count:chinautla",
+          "queryType": "get",
+          "refId": "A"
+        }
+      ],
+      "title": "🌟 Total Tweets Chinautla",
+      "type": "stat"
+    },
+    {
+      "datasource": "Valkey",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 8
+      },
+      "id": 3,
+      "options": {
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "command": "get",
+          "datasource": "Valkey",
+          "key": "count:mixco",
+          "queryType": "get",
+          "refId": "A"
+        }
+      ],
+      "title": "📍 Total Mixco",
+      "type": "stat"
+    },
+    {
+      "datasource": "Valkey",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "purple",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 8
+      },
+      "id": 4,
+      "options": {
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "command": "get",
+          "datasource": "Valkey",
+          "key": "count:guatemala",
+          "queryType": "get",
+          "refId": "A"
+        }
+      ],
+      "title": "🏛️ Total Guatemala",
+      "type": "stat"
+    },
+    {
+      "datasource": "Valkey",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "orange",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 8
+      },
+      "id": 5,
+      "options": {
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "command": "get",
+          "datasource": "Valkey",
+          "key": "count:amatitlan",
+          "queryType": "get",
+          "refId": "A"
+        }
+      ],
+      "title": "🌄 Total Amatitlán",
+      "type": "stat"
+    },
+    {
+      "datasource": "Valkey",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 8
+      },
+      "id": 6,
+      "options": {
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "command": "get",
+          "datasource": "Valkey",
+          "key": "count:chinautla",
+          "queryType": "get",
+          "refId": "Chinautla"
+        },
+        {
+          "command": "get",
+          "datasource": "Valkey",
+          "key": "count:mixco",
+          "queryType": "get",
+          "refId": "Mixco"
+        },
+        {
+          "command": "get",
+          "datasource": "Valkey",
+          "key": "count:guatemala",
+          "queryType": "get",
+          "refId": "Guatemala"
+        },
+        {
+          "command": "get",
+          "datasource": "Valkey",
+          "key": "count:amatitlan",
+          "queryType": "get",
+          "refId": "Amatitlan"
+        }
+      ],
+      "title": "🎯 TOTAL TWEETS",
+      "type": "stat"
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": [
+    "proyecto3",
+    "clima",
+    "tweets",
+    "weather"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Proyecto 3 - Weather Tweets (FINAL)",
+  "uid": "proyecto3-weather-final",
+  "version": 1
+}
